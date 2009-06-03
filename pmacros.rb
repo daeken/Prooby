@@ -32,6 +32,12 @@ class PyMacros
 					[:tuple] + mapToAst(exp[1..-1])
 				]
 			when :call    then [:CallFunc, toAst(exp[0]), [:tuple] + mapToAst(exp[1..-1]), :None, :None]
+			when :class   then
+				[:Class, 
+					[:str, exp[0]], 
+					[:list], 
+					:None, 
+					mapToAst(exp[1..-1])]
 			when :def
 				[:Function, 
 					:None,

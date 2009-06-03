@@ -41,7 +41,8 @@ class AstMacros
 		exp = [:def, :top, [:args], exp]
 		exp = moveBlocks exp
 		exp = [:top] + exp[3][1..-1]
-		addReturns exp
+		exp = addReturns exp
+		addSelfArgs exp
 	end
 	
 	def moveBlocks(exp)
@@ -96,6 +97,25 @@ class AstMacros
 			end
 			item[3].push node
 			item
+		end
+	end
+	
+	def addSelfArgs(exp)
+		return exp if not exp.kind_of? Array
+		exp.map do |x|
+			if x.kind_of? Array then
+				x.transformShallow(:class) do |item|
+					exp.transformShallow(:def) do |sub|
+						sub[2] = [:args, :self] + sub[2][1..-1]
+						sub
+					end
+					
+					addSelfArgs(item)
+					item
+				end
+			else
+				x
+			end
 		end
 	end
 end

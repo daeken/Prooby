@@ -1,4 +1,10 @@
-ret = map(_, range(1, 11)) { |x| puts x; [x, x ** 2] }
-puts ret
+class Foo
+	def __init__(x)
+		print 'foo!', x
+	end
+end
 
-map(_, ret) { |x| puts x }
+print map(_, range(1, 11)) { |x| print x; [x, x ** 2] }
+
+print Foo(5)
+print $Foo
