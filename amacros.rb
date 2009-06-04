@@ -113,7 +113,7 @@ class AstMacros
 		exp.map do |x|
 			if x.kind_of? Array then
 				x.transformShallow(:class) do |item|
-					exp.transformShallow(:def) do |sub|
+					item.transformShallow(:def) do |sub|
 						sub[2] = [:args, :self] + sub[2][1..-1]
 						sub
 					end

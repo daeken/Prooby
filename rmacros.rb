@@ -5,7 +5,7 @@ class RubyMacros
 		if exp[0] != :block then exp = [:block, exp] end
 		
 		@ignore = [:args]
-		@pass   = [:class, :lasgn, :masgn]
+		@pass   = [:class, :if, :lasgn, :masgn]
 		@raw    = [:lit, :lvar, :str]
 		@rename = {
 				:array => :list, 
@@ -49,6 +49,8 @@ class RubyMacros
 	def handle_call(exp)
 		if @arith.include? exp[1] then
 			return arith(exp)
+		elsif exp[0] == nil and exp[1] == :_ and exp[2].length == 1 then
+			return [:raw, :_]
 		end
 		
 		target = 
@@ -72,7 +74,7 @@ class RubyMacros
 			when [:raw, :print] then [:print] + args
 			else
 				if args.length == 0 then 
-					target
+					[:trycall, target]
 				else
 					[:call, target] + args
 				end
@@ -80,7 +82,10 @@ class RubyMacros
 	end
 	
 	def handle_const(exp)
-		[:call, [:raw, exp[0]]]
+		if exp[0] == :True then [:raw, :True]
+		elsif exp[0] == :False then [:raw, :False]
+		else [:call, [:raw, exp[0]]]
+		end
 	end
 	
 	def handle_gvar(exp)
@@ -89,5 +94,12 @@ class RubyMacros
 	
 	def handle_scope(exp)
 		convert exp[0]
+	end
+	
+	def handle_true(exp)
+		[:raw, :True]
+	end
+	def handle_false(exp)
+		[:raw, :False]
 	end
 end

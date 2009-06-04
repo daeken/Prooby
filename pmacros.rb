@@ -35,7 +35,7 @@ class PyMacros
 			when :class   then
 				[:Class, 
 					[:str, exp[0]], 
-					[:list], 
+					[:tuple], 
 					:None, 
 					mapToAst(exp[1..-1])]
 			when :def
@@ -46,6 +46,20 @@ class PyMacros
 					[:tuple], 0, :None, 
 					toAst(exp[2])]
 			when :getattr then [:CallFunc, [:Name, [:str, :getattr]], [:tuple] + mapToAst(exp), :None, :None]
+			when :if
+				[:If, 
+					[:tuple, 
+						[:tuple, 
+							toAst(exp[0]), 
+							toAst(
+									if exp[1][0] == :scope then exp[1]
+									else [:scope, exp[1]]
+									end
+								)]], 
+					if exp[2] == nil then :None
+					elsif exp[2][0] == :scope then toAst(exp[2])
+					else toAst([:scope, exp[2]])
+					end]
 			when :import  then [:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
 			when :lasgn
 				[:Assign, 
@@ -60,7 +74,12 @@ class PyMacros
 			when :raw     then toRaw exp[0]
 			when :return  then [:Return, toAst(exp[0])]
 			when :scope   then [:Stmt, [:tuple] + mapToAst(exp)]
-			when :trycall then [:CallFunc, [:Name, :trycall], [:tuple] + mapToAst(exp), :None, :None]
+			when :trycall
+				target = toAst exp[0]
+				[:IfExp, 
+					[:CallFunc, [:Name, [:str, 'callable']], [:tuple, target], :None, :None], 
+					[:CallFunc, target, [:tuple], :None, :None], 
+					target]
 			when :top     then [:Module, :None, [:Stmt, [:tuple] + mapToAst(exp)]]
 			else puts 'Unknown type in emit: ' + type.to_s
 		end
