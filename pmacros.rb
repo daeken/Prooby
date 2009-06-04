@@ -15,82 +15,131 @@ class PyMacros
 				:| => :Bitor, 
 				:^ => :Bitxor
 			}
+		
+		@handlers = self.public_methods.reject { |x| !x.match '^handle_' }
+		@handlers.map! { |x| x[7..-1] }
+		
+		@maps = self.public_methods.reject { |x| !x.match '^map_' }
+		@maps.map! { |x| x[4..-1] }
 	end
 	
 	def transform(exp)
-		toAst exp
-	end
-
-	def toAst(exp)
 		return exp if not exp.kind_of? Array
 		
-		type, exp = exp[0], exp[1..-1]
-		case type
-			when :arith
-				[
-					@arith[exp[0]], 
-					[:tuple] + mapToAst(exp[1..-1])
-				]
-			when :call    then [:CallFunc, toAst(exp[0]), [:tuple] + mapToAst(exp[1..-1]), :None, :None]
-			when :class   then
-				[:Class, 
-					[:str, exp[0]], 
-					[:tuple], 
-					:None, 
-					mapToAst(exp[1..-1])]
-			when :def
-				[:Function, 
-					:None,
-					[:str, exp[0]], 
-					[:tuple] + exp[1][1..-1].map { |x| [:str, x]}, 
-					[:tuple], 0, :None, 
-					toAst(exp[2])]
-			when :getattr then [:CallFunc, [:Name, [:str, :getattr]], [:tuple] + mapToAst(exp), :None, :None]
-			when :if
-				[:If, 
-					[:tuple, 
-						[:tuple, 
-							toAst(exp[0]), 
-							toAst(
-									if exp[1][0] == :scope then exp[1]
-									else [:scope, exp[1]]
-									end
-								)]], 
-					if exp[2] == nil then :None
-					elsif exp[2][0] == :scope then toAst(exp[2])
-					else toAst([:scope, exp[2]])
-					end]
-			when :import  then [:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
-			when :lasgn
-				[:Assign, 
-					[:tuple, 
-						[:AssName, 
-							[:str, exp[0]], 
-							[:str, :OP_ASSIGN]]], 
-					toAst(exp[1])]
-			when :list    then [:List, [:tuple] + mapToAst(exp)]
-			when :name    then [:Name, [:str, exp[0]]]
-			when :print   then [:Printnl, [:tuple] + mapToAst(exp), :None]
-			when :raw     then toRaw exp[0]
-			when :return  then [:Return, toAst(exp[0])]
-			when :scope   then [:Stmt, [:tuple] + mapToAst(exp)]
-			when :trycall
-				target = toAst exp[0]
-				[:IfExp, 
-					[:CallFunc, [:Name, [:str, 'callable']], [:tuple, target], :None, :None], 
-					[:CallFunc, target, [:tuple], :None, :None], 
-					target]
-			when :top     then [:Module, :None, [:Stmt, [:tuple] + mapToAst(exp)]]
-			else puts 'Unknown type in emit: ' + type.to_s
+		type, rest = exp[0], exp[1..-1]
+		if @handlers.include? type.to_s then
+			self.send(('handle_' + type.to_s).to_s, rest)
+		elsif @maps.include? type.to_s then
+			self.send(('map_' + type.to_s).to_s, map(rest))
+		else
+			puts 'Unknown type ' + type.to_s + ' in PyMacro'
+			exp
 		end
 	end
 	
-	def toRaw(raw)
-		if raw.kind_of? String    then [:Const, [:str, raw]]
-		elsif raw.kind_of? Symbol then [:Name, [:str, raw]]
-		else [:Const, raw]
+	def map(exp) exp.map { |x| transform x } end
+	
+	def handle_arith(exp)
+		[@arith[exp[0]], 
+			[:tuple] + map(exp[1..-1])]
+	end
+	
+	def map_call(exp)
+		[:CallFunc, 
+			exp[0], 
+			[:tuple] + exp[1..-1], 
+			:None, :None]
+	end
+	
+	def handle_class(exp)
+		[:Class, 
+			[:str, exp[0]], 
+			[:tuple], 
+			:None, 
+			map(exp[1..-1])]
+	end
+	
+	def handle_def(exp)
+		[:Function, 
+			:None,
+			[:str, exp[0]], 
+			[:tuple] + exp[1][1..-1].map { |x| [:str, x]}, 
+			[:tuple], 0, :None, 
+			transform(exp[2])]
+	end
+	
+	def handle_getattr(exp)
+		[:CallFunc, [:Name, [:str, :getattr]], [:tuple] + map(exp), :None, :None]
+	end
+	
+	def handle_if(exp)
+		[:If, 
+			[:tuple, 
+				[:tuple, 
+					transform(exp[0]), 
+					transform(
+							if exp[1][0] == :scope then exp[1]
+							else [:scope, exp[1]]
+							end
+						)]], 
+			if exp[2] == nil then :None
+			elsif exp[2][0] == :scope then transform(exp[2])
+			else transform([:scope, exp[2]])
+			end]
+	end
+	
+	def handle_import(exp)
+		[:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
+	end
+	
+	def handle_lasgn(exp)
+		[:Assign, 
+			[:tuple, 
+				[:AssName, 
+					[:str, exp[0]], 
+					[:str, :OP_ASSIGN]]], 
+			transform(exp[1])]
+	end
+	
+	def map_list(exp)
+		[:List, [:tuple] + exp]
+	end
+	
+	def handle_name(exp)
+		[:Name, [:str, exp[0]]]
+	end
+	
+	def map_print(exp)
+		[:Printnl, 
+			[:tuple] + exp, 
+			:None]
+	end
+	
+	def handle_raw(exp)
+		if exp[0].kind_of? String    then [:Const, [:str, exp[0]]]
+		elsif exp[0].kind_of? Symbol then [:Name, [:str, exp[0]]]
+		else [:Const, exp[0]]
 		end
 	end
 	
-	def mapToAst(exp) exp.map { |x| toAst x } end
+	def map_return(exp)
+		[:Return, exp[0]]
+	end
+	
+	def map_scope(exp)
+		[:Stmt, [:tuple] + exp]
+	end
+	
+	def map_trycall(exp)
+		[:IfExp, 
+			[:CallFunc, [:Name, [:str, 'callable']], [:tuple, exp[0]], :None, :None], 
+			[:CallFunc, exp[0], [:tuple], :None, :None], 
+			exp[0]]
+	end
+	
+	def map_top(exp)
+		[:Module, 
+			:None, 
+			[:Stmt, [:tuple] + exp]]
+	end
 end

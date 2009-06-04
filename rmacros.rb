@@ -4,6 +4,8 @@ class RubyMacros
 	def transform(exp)
 		if exp[0] != :block then exp = [:block, exp] end
 		
+		@arith = [:+, :-, :*, :/, :%, :**, :<<, :>>, :&, :|, :^]
+		
 		@ignore = [:args]
 		@pass   = [:class, :if, :lasgn, :masgn]
 		@raw    = [:lit, :lvar, :str]
@@ -15,8 +17,6 @@ class RubyMacros
 			}
 		@handlers = self.public_methods.reject { |x| !x.match '^handle_' }
 		@handlers.map! { |x| x[7..-1] }
-		
-		@arith = [:+, :-, :*, :/, :%, :**, :<<, :>>, :&, :|, :^]
 		
 		convert exp
 	end
