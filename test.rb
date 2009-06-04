@@ -2,6 +2,10 @@ class Foo
 	def __init__(x)
 		print 'foo!', x
 	end
+	
+	def __str__
+		'Some Foo instance'
+	end
 end
 
 foo = map(_, range(1, 11)) { |x| print x; x ** 2 }
