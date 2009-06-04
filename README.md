@@ -3,7 +3,7 @@ Introduction
 
 Prooby is a Ruby-inspired syntax for Python.  At the moment, it uses Ruby itself
 to parse the code and compile to a Python AST.  In the future, it is planned to
-be copmletely self-bootstrapping.
+be completely self-bootstrapping.
 
 What Prooby is not
 ------------------

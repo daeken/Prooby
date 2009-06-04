@@ -36,7 +36,7 @@ class RubyMacros
 		elsif @handlers.include? type.to_s then
 			self.send(('handle_' + type.to_s).to_s, rest)
 		else
-			puts 'Unknown type ' + type.to_s
+			puts 'Unknown type ' + type.to_s + ' if in RMacro'
 			exp
 		end
 	end
