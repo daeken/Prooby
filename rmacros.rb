@@ -5,7 +5,7 @@ class RubyMacros
 		if exp[0] != :block then exp = [:block, exp] end
 		
 		@ignore = [:args]
-		@pass   = [:class]
+		@pass   = [:class, :lasgn, :masgn]
 		@raw    = [:lit, :lvar, :str]
 		@rename = {
 				:array => :list, 
@@ -85,14 +85,6 @@ class RubyMacros
 	
 	def handle_gvar(exp)
 		[:name, exp[0].to_s[1..-1]]
-	end
-	
-	def handle_lasgn(exp)
-		convert [:masgn, [:array, [:lasgn] + exp]]
-	end
-	
-	def handle_masgn(exp)
-		[:args] + exp[0][1..-1].map { |x| x[1] }
 	end
 	
 	def handle_scope(exp)

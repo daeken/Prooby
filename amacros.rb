@@ -45,6 +45,14 @@ class AstMacros
 		addSelfArgs exp
 	end
 	
+	def rewriteArgs(exp)
+		type, exp = exp[0], exp[1..-1]
+		case type
+			when :lasgn then [:args] + exp
+			when :masgn then [:args] + exp[0][1..-1].map { |x| x[1] }
+		end
+	end
+	
 	def moveBlocks(exp)
 		exp = exp.map do |x|
 			if x.kind_of? Array then
@@ -66,7 +74,7 @@ class AstMacros
 			name = 'block_' + @blockId.to_s
 			@blockId += 1
 			@blocks.push [
-					:def, name, sub[2], 
+					:def, name, rewriteArgs(sub[2]), 
 					if sub[3][0] == :scope then sub[3]
 					else [:scope, sub[3]]
 					end

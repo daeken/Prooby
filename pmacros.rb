@@ -45,8 +45,15 @@ class PyMacros
 					[:tuple] + exp[1][1..-1].map { |x| [:str, x]}, 
 					[:tuple], 0, :None, 
 					toAst(exp[2])]
-			when :getattr then [:CallFunc, [:Name, :getattr], [:tuple] + mapToAst(exp), :None, :None]
+			when :getattr then [:CallFunc, [:Name, [:str, :getattr]], [:tuple] + mapToAst(exp), :None, :None]
 			when :import  then [:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
+			when :lasgn
+				[:Assign, 
+					[:tuple, 
+						[:AssName, 
+							[:str, exp[0]], 
+							[:str, :OP_ASSIGN]]], 
+					toAst(exp[1])]
 			when :list    then [:List, [:tuple] + mapToAst(exp)]
 			when :name    then [:Name, [:str, exp[0]]]
 			when :print   then [:Printnl, [:tuple] + mapToAst(exp), :None]

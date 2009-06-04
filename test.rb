@@ -4,7 +4,6 @@ class Foo
 	end
 end
 
-print map(_, range(1, 11)) { |x| print x; [x, x ** 2] }
-
-print Foo(5)
-print $Foo
+foo = map(_, range(1, 11)) { |x| print x; x ** 2 }
+print 'Sum of 1-10**2:', reduce(_, foo) { |accum, x| accum+x }
+print Foo 5
