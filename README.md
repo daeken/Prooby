@@ -6,7 +6,7 @@ to parse the code and compile to a Python AST.  In the future, it is planned to
 be copmletely self-bootstrapping.
 
 What Prooby is not
-==================
+------------------
 
 Prooby is not a Ruby implementation.  When writing Prooby code, you're in
 Python's world.  You can't use Ruby's standard library, and writing code as if
