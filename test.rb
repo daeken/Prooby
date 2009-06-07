@@ -2,11 +2,7 @@ class Foo
 	
 	def __init__(x)
 		@foo = 5
-		print 'foo!', x
-	end
-	
-	def __str__
-		'Some Foo instance'
+		print @foo
 	end
 end
 

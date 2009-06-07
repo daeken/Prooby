@@ -102,6 +102,10 @@ class PyMacros
 		[:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
 	end
 	
+	def handle_ivar(exp)
+		[:Getattr, [:Name, [:str, :self]], [:str, exp[0].to_s[1..-1]]]
+	end
+	
 	def handle_lasgn(exp)
 		[:Assign, 
 			[:tuple, 
