@@ -72,6 +72,16 @@ class PyMacros
 		[:CallFunc, [:Name, [:str, :getattr]], [:tuple] + map(exp), :None, :None]
 	end
 	
+	def map_iasgn(exp)
+		[:Assign,
+			[:tuple,
+				[:AssAttr,
+					[:Name, [:str, :self]],
+					[:str, exp[0].to_s[1..-1]],
+					[:str, :OP_ASSIGN]]],
+			exp[1]]
+	end
+
 	def handle_if(exp)
 		[:If, 
 			[:tuple, 
