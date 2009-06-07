@@ -7,7 +7,7 @@ class RubyMacros
 		@arith = [:+, :-, :*, :/, :%, :**, :<<, :>>, :&, :|, :^]
 		
 		@ignore = [:args]
-		@pass   = [:class, :if, :lasgn, :masgn]
+		@pass   = [:class, :lasgn, :masgn]
 		@raw    = [:lit, :lvar, :str]
 		@rename = {
 				:array => :list, 
@@ -36,9 +36,15 @@ class RubyMacros
 		elsif @handlers.include? type.to_s then
 			self.send(('handle_' + type.to_s).to_s, rest)
 		else
-			puts 'Unknown type ' + type.to_s + ' if in RMacro'
+			puts 'Unknown type ' + type.to_s + ' in RMacro'
 			exp
 		end
+	end
+	
+	def ensureScoped(exp)
+		exp = convert exp
+		return exp if not exp.kind_of? Array or exp[0] == :scope
+		[:scope, exp]
 	end
 	
 	def handle_arglist(exp)
@@ -90,6 +96,13 @@ class RubyMacros
 	
 	def handle_gvar(exp)
 		[:name, exp[0].to_s[1..-1]]
+	end
+	
+	def handle_if(exp)
+		[:if, 
+			convert(exp[0]), 
+			ensureScoped(exp[1]), 
+			ensureScoped(exp[2])]
 	end
 	
 	def handle_scope(exp)

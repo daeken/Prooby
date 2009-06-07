@@ -83,12 +83,12 @@ class AstMacros
 			name = [:name, name]
 			call = sub[1]
 			[:call, call[1]] + call[2..-1].map { |x|
-				if x == [:raw, :_] then
-					name
-				else
-					x
-				end
-			}
+					if x == [:raw, :_] then
+						name
+					else
+						x
+					end
+				}
 		end
 		@blocks = []
 		exp = subMove exp

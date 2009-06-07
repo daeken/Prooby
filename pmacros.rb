@@ -72,19 +72,14 @@ class PyMacros
 		[:CallFunc, [:Name, [:str, :getattr]], [:tuple] + map(exp), :None, :None]
 	end
 	
-	def handle_if(exp)
+	def map_if(exp)
 		[:If, 
 			[:tuple, 
 				[:tuple, 
-					transform(exp[0]), 
-					transform(
-							if exp[1][0] == :scope then exp[1]
-							else [:scope, exp[1]]
-							end
-						)]], 
+					exp[0], 
+					exp[1]]], 
 			if exp[2] == nil then :None
-			elsif exp[2][0] == :scope then transform(exp[2])
-			else transform([:scope, exp[2]])
+			else exp[2]
 			end]
 	end
 	
@@ -92,13 +87,13 @@ class PyMacros
 		[:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
 	end
 	
-	def handle_lasgn(exp)
+	def map_lasgn(exp)
 		[:Assign, 
 			[:tuple, 
 				[:AssName, 
 					[:str, exp[0]], 
 					[:str, :OP_ASSIGN]]], 
-			transform(exp[1])]
+			exp[1]]
 	end
 	
 	def map_list(exp)
