@@ -72,6 +72,16 @@ class PyMacros
 		[:CallFunc, [:Name, [:str, :getattr]], [:tuple] + map(exp), :None, :None]
 	end
 	
+	def map_iasgn(exp)
+		[:Assign,
+			[:tuple,
+				[:AssAttr,
+					[:Name, [:str, :self]],
+					[:str, exp[0].to_s[1..-1]],
+					[:str, :OP_ASSIGN]]],
+			exp[1]]
+	end
+
 	def map_if(exp)
 		[:If, 
 			[:tuple, 
@@ -85,6 +95,12 @@ class PyMacros
 	
 	def handle_import(exp)
 		[:Import, [:tuple] + exp.map { |x| [:tuple, x[1], :None] }]
+	end
+	
+	def handle_ivar(exp)
+		[:Getattr, 
+			[:Name, [:str, :self]], 
+			[:str, exp[0].to_s[1..-1]]]
 	end
 	
 	def map_lasgn(exp)

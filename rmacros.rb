@@ -7,7 +7,7 @@ class RubyMacros
 		@arith = [:+, :-, :*, :/, :%, :**, :<<, :>>, :&, :|, :^]
 		
 		@ignore = [:args]
-		@pass   = [:class, :lasgn, :masgn]
+		@pass   = [:class, :iasgn, :lasgn, :masgn]
 		@raw    = [:lit, :lvar, :str]
 		@rename = {
 				:array => :list, 

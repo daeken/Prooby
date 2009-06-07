@@ -1,16 +1,18 @@
 class Foo
 	def __init__(x)
-		print 'foo!', x
+		@foo = x
+		print @foo
 	end
 	
 	def __str__
-		'Some Foo instance'
+		'Some foo instance'
 	end
 end
 
 foo = map(_, range(1, 11)) { |x| print x; x ** 2 }
 print 'Sum of 1-10**2:', reduce(_, foo) { |accum, x| accum+x }
 print Foo 5
+print Foo 10
 
 def test
 	false
